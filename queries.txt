@@ -1,0 +1,5 @@
+SELECT * FROM "orders"."checkins" WHERE measure_name='LocationId' and measure_value::varchar='1' and time between ago(15m) and now() ORDER BY time DESC LIMIT 10 
+
+SELECT * FROM "orders"."checkins" WHERE measure_value::varchar='1' and time between ago(15m) and now() ORDER BY time DESC LIMIT 10 
+
+SELECT COUNT(measure_name) FROM "orders"."checkins" WHERE measure_value::varchar='1' and time between ago(15m) and now()
