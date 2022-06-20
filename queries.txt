@@ -3,3 +3,11 @@ SELECT * FROM "orders"."checkins" WHERE measure_name='LocationId' and measure_va
 SELECT * FROM "orders"."checkins" WHERE measure_value::varchar='1' and time between ago(15m) and now() ORDER BY time DESC LIMIT 10 
 
 SELECT COUNT(measure_name) FROM "orders"."checkins" WHERE measure_value::varchar='1' and time between ago(15m) and now()
+
+SELECT * FROM "orders"."checkins" where Dim2 = '2' and OrderId = 'bb1a6942-28c9-4770-a7f1-3574ac7279f5'
+
+SELECT time,locationNum FROM "orders"."checkins" where Dim2 = '2' and OrderId = 'bb1a6942-28c9-4770-a7f1-3574ac7279f5'
+
+SELECT count(*) FROM "orders"."checkins" where orderSubTotal > 7.32 and Dim2 = '0'
+
+SELECT * FROM "orders"."checkins" WHERE time between ago(60m) and now() ORDER BY time DESC

@@ -51,11 +51,12 @@ func main() {
 	writeSvc := timestreamwrite.New(sess)
 
 	n := 0
-	for n < 6000 {
+	for n < 15 {
 		order := Order{
 			Id:               uuid.NewString(),
-			LocationNum:      strconv.Itoa(n % 2000), //2000 unique locations
+			LocationNum:      strconv.Itoa(n % 3), //3 unique locations
 			CheckInTimestamp: time.Now(),
+			OrderSubTotal:    float64(n) + 0.32, //simulate subtotal prices
 		}
 
 		fmt.Println(order)
@@ -80,12 +81,11 @@ func insertOrder(writer *timestreamwrite.TimestreamWrite, order Order) error {
 		TableName:    aws.String("checkins"),
 		Records: []*timestreamwrite.Record{
 			{
-				Dimensions:       buildDimensions(order.Id),
-				MeasureName:      aws.String("LocationId"),
-				MeasureValue:     aws.String(order.LocationNum),
-				MeasureValueType: aws.String(timestreamwrite.MeasureValueTypeVarchar),
+				Dimensions:       buildDimensions(order.Id, order.LocationNum),
+				MeasureName:      aws.String("OrderMeasures"),
+				MeasureValues:    buildMeasures(order),
+				MeasureValueType: aws.String(timestreamwrite.MeasureValueTypeMulti),
 				Time:             aws.String(orderTimestampMilli),
-				TimeUnit:         aws.String(timestreamwrite.TimeUnitMilliseconds),
 			},
 		},
 	}
@@ -97,12 +97,30 @@ func insertOrder(writer *timestreamwrite.TimestreamWrite, order Order) error {
 	return nil
 }
 
-func buildDimensions(orderId string) []*timestreamwrite.Dimension {
-	dimensions := []*timestreamwrite.Dimension{}
-	dimensions = append(dimensions, &timestreamwrite.Dimension{
-		Name:  aws.String("OrderId"),
-		Value: aws.String(orderId),
-	})
+func buildDimensions(orderId string, dim2 string) []*timestreamwrite.Dimension {
+	return []*timestreamwrite.Dimension{
+		{
+			Name:  aws.String("OrderId"),
+			Value: aws.String(orderId),
+		},
+		{
+			Name:  aws.String("Dim2"),
+			Value: aws.String(dim2),
+		},
+	}
+}
 
-	return dimensions
+func buildMeasures(order Order) []*timestreamwrite.MeasureValue {
+	return []*timestreamwrite.MeasureValue{
+		{
+			Name:  aws.String("locationNum"),
+			Value: aws.String(order.LocationNum),
+			Type:  aws.String(timestreamwrite.MeasureValueTypeVarchar),
+		},
+		{
+			Name:  aws.String("orderSubTotal"),
+			Value: aws.String(fmt.Sprintf("%f", order.OrderSubTotal)),
+			Type:  aws.String(timestreamwrite.MeasureValueTypeDouble),
+		},
+	}
 }
